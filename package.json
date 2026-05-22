@@ -1,0 +1,10 @@
+{
+  "name": "cinematic-viewing",
+  "private": true,
+  "scripts": {
+    "deploy": "node scripts/deploy.js"
+  },
+  "devDependencies": {
+    "basic-ftp": "^5.0.5"
+  }
+}

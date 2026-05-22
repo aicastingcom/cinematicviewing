@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinematic Viewing — Luxury Property Films</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #0a0a0a;
+      --charcoal: #141414;
+      --white: #f8f6f2;
+      --gold: #c9a962;
+      --gold-dim: rgba(201, 169, 98, 0.35);
+      --overlay: rgba(10, 10, 10, 0.55);
+      --font-serif: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "DM Sans", system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: var(--white);
+      background: var(--black);
+    }
+
+    /* Solid backgrounds so fixed hero video does not bleed through */
+    .page-below-hero {
+      position: relative;
+      z-index: 2;
+      background: var(--black);
+    }
+
+    body.past-hero .hero-video-wrap,
+    body.past-hero .hero-overlay,
+    body.past-hero .hero-content,
+    body.past-hero .scroll-hint,
+    body.past-hero .sound-toggle {
+      visibility: hidden;
+    }
+
+    /* —— Nav —— */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 1.25rem 2.5rem;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.85), transparent);
+      transition: background 0.4s;
+    }
+
+    .nav.scrolled {
+      background: rgba(10, 10, 10, 0.92);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-links {
+      grid-column: 2;
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      justify-self: center;
+    }
+
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+
+    .nav-cta {
+      grid-column: 3;
+      justify-self: end;
+      padding: 0.75rem 1.5rem;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    /* —— Hero: video fills window; spacer for scroll height —— */
+    .hero {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+    }
+
+    .hero-video-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .hero-video-wrap video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+
+    .hero-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(10, 10, 10, 0.35) 0%,
+        rgba(10, 10, 10, 0.5) 50%,
+        rgba(10, 10, 10, 0.75) 100%
+      );
+    }
+
+    /* Logo + text: fixed to viewport, same center logic as nav / scroll */
+    .hero-content {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5.5rem 2rem 6rem;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .hero-content a,
+    .hero-content button {
+      pointer-events: auto;
+    }
+
+    .hero-logo {
+      width: min(90vw, 500px);
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 1.25rem;
+      background: transparent;
+      filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.5));
+    }
+
+    .hero-copy {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-explanation {
+      font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+      line-height: 1.65;
+      opacity: 0.95;
+      margin: 0 0 2.5rem;
+      letter-spacing: 0.03em;
+      width: 100%;
+      text-align: center;
+      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: transform 0.2s, background 0.2s, color 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .btn-primary:hover {
+      background: #dfc07a;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(248, 246, 242, 0.6);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* Sound toggle */
+    .sound-toggle {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.25rem;
+      background: rgba(10, 10, 10, 0.65);
+      border: 1px solid var(--gold-dim);
+      color: var(--white);
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .sound-toggle:hover {
+      border-color: var(--gold);
+      background: rgba(10, 10, 10, 0.85);
+    }
+
+    .sound-toggle svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--gold);
+    }
+
+    .scroll-hint {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(248, 246, 242, 0.7);
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      animation: bounce 2.5s ease-in-out infinite;
+    }
+
+    .scroll-hint span {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* —— Sections —— */
+    section {
+      padding: 5rem 2.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    section.wide { max-width: 1400px; }
+
+    .section-label {
+      font-size: 0.9rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 500;
+      margin-bottom: 2.5rem;
+      line-height: 1.2;
+    }
+
+    /* Trust strip */
+    .trust {
+      background: var(--charcoal);
+      padding: 3rem 2.5rem;
+      border-top: 1px solid var(--gold-dim);
+      border-bottom: 1px solid var(--gold-dim);
+    }
+
+    .trust-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.5rem 4rem;
+      text-align: center;
+    }
+
+    .trust-item strong {
+      display: block;
+      font-family: var(--font-serif);
+      font-size: 1.75rem;
+      color: var(--gold);
+      margin-bottom: 0.25rem;
+    }
+
+    .trust-item span {
+      font-size: 1rem;
+      opacity: 0.85;
+      letter-spacing: 0.05em;
+    }
+
+    /* Services grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .services-grid { grid-template-columns: 1fr; }
+    }
+
+    .service-card {
+      background: var(--charcoal);
+      border: 1px solid var(--gold-dim);
+      padding: 2rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .service-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+    }
+
+    .service-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.65rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .service-card p {
+      font-size: 1.05rem;
+      opacity: 0.9;
+      line-height: 1.65;
+    }
+
+    /* Showreel */
+    .showreel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .showreel-three .showreel-item.featured {
+      grid-column: span 1;
+      grid-row: span 1;
+      min-height: 220px;
+    }
+
+    @media (max-width: 768px) {
+      .showreel-grid { grid-template-columns: 1fr; }
+    }
+
+    .showreel-item {
+      aspect-ratio: 16/9;
+      background: var(--charcoal);
+      border: 1px solid var(--gold-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(248, 246, 242, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .showreel-item.featured {
+      grid-column: span 2;
+      grid-row: span 2;
+      aspect-ratio: auto;
+      min-height: 320px;
+      background: linear-gradient(135deg, #1a1814 0%, #0a0a0a 100%);
+      color: var(--gold);
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .showreel-item.featured::after {
+      content: "Your FPV tour · 4K";
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    /* Process */
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+    }
+
+    .process-step .num {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      color: var(--gold);
+      opacity: 0.5;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .process-step h3 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Agency band */
+    .agency-band {
+      background: linear-gradient(135deg, #1c1810 0%, var(--charcoal) 50%, #0a0a0a 100%);
+      border: 1px solid var(--gold-dim);
+      padding: 4rem 3rem;
+      text-align: center;
+      margin: 0 2.5rem 5rem;
+      max-width: calc(1200px + 5rem);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .agency-band .section-title { margin-bottom: 1rem; }
+    .agency-band p {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      font-size: 1.15rem;
+      opacity: 0.9;
+    }
+
+    /* Contact */
+    .contact {
+      background: var(--charcoal);
+      padding: 5rem 2.5rem;
+      border-top: 1px solid var(--gold-dim);
+    }
+
+    .contact-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .contact form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .contact input,
+    .contact textarea,
+    .contact select {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      background: var(--black);
+      border: 1px solid var(--gold-dim);
+      color: var(--white);
+      font-family: var(--font-sans);
+      font-size: 1.1rem;
+    }
+
+    .contact input:focus,
+    .contact textarea:focus,
+    .contact select:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .contact textarea { min-height: 120px; resize: vertical; }
+
+    .contact .btn-primary { width: 100%; margin-top: 0.5rem; }
+
+    /* Footer */
+    footer {
+      padding: 2.5rem;
+      text-align: center;
+      border-top: 1px solid var(--gold-dim);
+    }
+
+    footer img {
+      width: min(200px, 55vw);
+      height: auto;
+      opacity: 0.95;
+      margin-bottom: 1.25rem;
+    }
+    footer p { font-size: 0.95rem; opacity: 0.6; letter-spacing: 0.05em; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .nav { padding: 1rem 1.25rem; }
+      .sound-toggle { bottom: 5rem; right: 1rem; }
+      .scroll-hint { display: none; }
+      .showreel-item.featured { grid-column: span 1; grid-row: span 1; min-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="nav" id="nav">
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">Book a meeting</a>
+  </header>
+
+  <!-- Full-screen hero: video background -->
+  <section class="hero" id="hero">
+    <div class="hero-video-wrap" aria-hidden="true">
+      <video
+        id="heroVideo"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        poster=""
+      >
+        <source src="assets/hero.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <h1 class="visually-hidden">Cinematic Viewing</h1>
+      <img
+        src="assets/logo.png"
+        alt="Cinematic Viewing — luxury property films"
+        class="hero-logo"
+        width="500"
+        height="auto"
+      />
+      <div class="hero-copy">
+        <p class="hero-explanation">
+          Luxury Swiss property films. Cinema-grade, AI-enhanced.
+        </p>
+        <div class="hero-actions">
+          <a href="#work" class="btn btn-primary">Watch showreel</a>
+          <a href="#contact" class="btn btn-outline">Book a meeting</a>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Turn sound on">
+      <svg id="iconMuted" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+      </svg>
+      <svg id="iconSound" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+      <span id="soundLabel">Sound on</span>
+    </button>
+
+    <div class="scroll-hint" aria-hidden="true">
+      Scroll
+      <span></span>
+    </div>
+  </section>
+
+  <div class="page-below-hero">
+  <div class="trust">
+    <div class="trust-inner">
+      <div class="trust-item"><strong>30+</strong><span>Years in filmmaking</span></div>
+      <div class="trust-item"><strong>FPV</strong><span>Indoor &amp; outdoor</span></div>
+      <div class="trust-item"><strong>4K</strong><span>Cinematic delivery</span></div>
+      <div class="trust-item"><strong>CH</strong><span>Swiss luxury properties</span></div>
+    </div>
+  </div>
+
+  <section id="services" class="wide">
+    <p class="section-label">What we create</p>
+    <h2 class="section-title">Cinematic Viewing</h2>
+    <div class="services-grid">
+      <article class="service-card">
+        <h3>One-shot FPV tour</h3>
+        <p>A single continuous fly-through of your property — indoors and out — in immersive 4K. The signature format luxury buyers remember and share.</p>
+      </article>
+      <article class="service-card">
+        <h3>FPV &amp; full-frame cinematography</h3>
+        <p>Dynamic FPV paired with full-frame cinematic filming — gimbal work and aerials — for a complete luxury property film.</p>
+      </article>
+      <article class="service-card">
+        <h3>Pictures to cinematic video (AI)</h3>
+        <p>Your existing property photography, elevated into moving film — using top-class AI and cinema-level prompting, shaped by 30+ years behind the camera so every shot feels directed, not generic.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="work" class="wide">
+    <p class="section-label">Portfolio</p>
+    <h2 class="section-title">Selected work</h2>
+    <div class="showreel-grid showreel-three">
+      <div class="showreel-item featured">One-shot FPV tour</div>
+      <div class="showreel-item">FPV &amp; full-frame</div>
+      <div class="showreel-item">Pictures to cinematic video · AI</div>
+    </div>
+  </section>
+
+  <section id="process">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">From first call to final film</h2>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="num">01</div>
+        <h3>Consultation</h3>
+        <p>Property, goals, and timeline — sale, rental, or agency campaign.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">02</div>
+        <h3>Creative plan</h3>
+        <p>One-shot FPV, full-frame cinematography, or pictures-to-video — or the right combination.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">03</div>
+        <h3>Shoot day</h3>
+        <p>Efficient, discreet, scheduled around guests and golden hour.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">04</div>
+        <h3>Delivery</h3>
+        <p>Graded 4K master plus web hero and social cut-downs.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="agency-band">
+    <p class="section-label">For agencies</p>
+    <h2 class="section-title">One creative partner for your luxury portfolio</h2>
+    <p>Consistent look across chalets and apartments — landscape films for your agency websites, with optional vertical cuts for Instagram when you want them. Delivered on your marketing deadlines.</p>
+  </div>
+
+  <section class="contact" id="contact">
+    <div class="contact-inner">
+      <p class="section-label">Get in touch</p>
+      <h2 class="section-title">Book a meeting</h2>
+      <p>For agencies — schedule a meeting to discuss your properties, formats, and how we work together. Tell us what you need and we will reply to arrange a call.</p>
+      <form action="#" method="post" onsubmit="return false;">
+        <input type="text" name="name" placeholder="Your name" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="text" name="location" placeholder="Property location (e.g. Verbier)" />
+        <label for="format" class="form-label">Style your agency needs</label>
+        <select name="format" id="format" required>
+          <option value="" disabled selected>Select a service</option>
+          <option value="fpv-tour">One-shot FPV tour</option>
+          <option value="fpv-fullframe">FPV &amp; full-frame cinematography</option>
+          <option value="pictures-ai">Pictures to cinematic video (AI)</option>
+        </select>
+        <textarea name="message" placeholder="Tell us about the property and deadline"></textarea>
+        <button type="submit" class="btn btn-primary">Send enquiry</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <img src="assets/logo.png" alt="Cinematic Viewing" />
+    <p>Cinematic Viewing · Luxury property films · Switzerland</p>
+    <p style="margin-top:0.5rem">CinematicViewing.com</p>
+  </footer>
+  </div>
+
+  <script>
+    const video = document.getElementById("heroVideo");
+    const toggle = document.getElementById("soundToggle");
+    const label = document.getElementById("soundLabel");
+    const iconMuted = document.getElementById("iconMuted");
+    const iconSound = document.getElementById("iconSound");
+    const nav = document.getElementById("nav");
+    const hero = document.getElementById("hero");
+
+    video.muted = true;
+    video.removeAttribute("style");
+
+    function syncHeroHeight() {
+      hero.style.minHeight = window.innerHeight + "px";
+    }
+    syncHeroHeight();
+    window.addEventListener("resize", syncHeroHeight);
+
+    toggle.addEventListener("click", () => {
+      video.muted = !video.muted;
+      const on = !video.muted;
+      toggle.setAttribute("aria-pressed", on);
+      toggle.setAttribute("aria-label", on ? "Turn sound off" : "Turn sound on");
+      label.textContent = on ? "Sound off" : "Sound on";
+      iconMuted.style.display = on ? "none" : "block";
+      iconSound.style.display = on ? "block" : "none";
+      if (on) video.play().catch(() => {});
+    });
+
+    window.addEventListener("scroll", () => {
+      nav.classList.toggle("scrolled", window.scrollY > 80);
+      const pastHero = window.scrollY >= hero.offsetHeight - 2;
+      document.body.classList.toggle("past-hero", pastHero);
+    });
+  </script>
+</body>
+</html>
