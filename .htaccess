@@ -1,0 +1,6 @@
+DirectoryIndex index.html
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+  Require all granted
+</IfModule>
