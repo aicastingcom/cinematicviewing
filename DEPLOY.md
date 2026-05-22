@@ -49,22 +49,40 @@ Enable **SSL** in Hostinger.
 
 ---
 
+## One-time: let Cursor deploy without copy-paste
+
+1. In Terminal:
+
+```bash
+cd ~/Desktop/CinematicViewing
+cp .env.github.example .env.github
+```
+
+2. Create a GitHub token (same as before): **Settings → Developer settings → Tokens (classic) → `repo` scope**.
+
+3. Open **`.env.github`** on your Mac and paste the token after `GITHUB_TOKEN=`. Save. **Do not send the token in chat.**
+
+4. In Hostinger → **Git** → turn on **Auto deployment** (if available).
+
+After this, when you say **`deploy now`**, Cursor runs `npm run deploy` → commit + push to GitHub automatically.
+
+---
+
 ## Every time we change the site
 
-**You say:** `deploy now` or `push to git`
+**You say:** `deploy now`
 
-**I will:**
+**Cursor will:**
 
-1. Save your changes in this folder
-2. Run `git add` + `git commit` with a short message
-3. Run `git push` (if GitHub is already connected on your Mac)
+1. Save changes in this folder  
+2. Run `npm run deploy` (commit + push `index.html` and `assets/`)
 
-**Hostinger** then either:
+**Hostinger** then:
 
-- Updates **automatically** on push, or  
+- Updates **automatically** if Auto deployment is on, or  
 - You click **Deploy** once in hPanel → Git
 
-You check: **https://cinematicviewing.com** (hard refresh: Cmd+Shift+R)
+Check: **https://cinematicviewing.com** (Cmd+Shift+R)
 
 ---
 
